@@ -15,7 +15,6 @@ export const fetchGreetings = createAsyncThunk('greetings/fetchGreetings', async
       Accept: 'application/json',
     },
   });
-  console.log(res.data);
   return res.data;
 });
 
