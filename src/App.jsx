@@ -1,35 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Route, Routes } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { fetchGreetings } from './redux/greetings/greetingsSlicer';
+import Greeting from './components/Greeting';
+import Navbar from './components/Navbar';
+import SignupForm from './components/SingupForm';
+import LoginForm from './components/LoginForm';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    // dispatch(fetchGreetings());
+    const authToken = Cookies.get('authToken');
+    if (authToken) {
+      setIsLoggedIn(true);
+    }
+  }, [dispatch]);
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLogin = () => {
+    // Handle login logic (e.g., set user as logged in)
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = async (authorization) => {
+    // Handle logout logic (e.g., set user as logged out)
+    const authToken = Cookies.get('authToken');
+    authorization ||= authToken;
+    console.log(authorization);
+    const response = await axios.delete('http://127.0.0.1:3000/logout', {
+      headers: {
+        Authorization: authorization, // Include the Authorization token in the headers
+      },
+    });
+    console.log(response);
+    setIsLoggedIn(false);
+    Cookies.remove('authToken');
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <div>
+      <Navbar isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+      <Routes>
+        <Route
+          path="/login"
+          element={<LoginForm handleLogin={handleLogin} handleLogout={handleLogout} />}
+        />
+        <Route path="/signup" element={<SignupForm />} />
+      </Routes>
+    </div>
+  );
+};
 
-export default App
+export default App;
